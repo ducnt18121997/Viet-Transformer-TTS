@@ -14,4 +14,3 @@ testing_lib*.py
 modules/mfa/dict/
 backup/
 egs/
-log/
