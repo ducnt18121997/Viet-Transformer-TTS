@@ -1,0 +1,346 @@
+fastspeech2: ### FastSpeech 2: Fast and High-Quality End-to-End Text to Speech (Ren et al., 2020) ###
+  max_seq_len: 1000 # this is low limited and update when pre-processed dataset
+  encoder_layers: 6 # <- 4
+  encoder_hidden: 384 # <- 256
+  decoder_layers: 6
+  decoder_hidden: 384 # <- 256 
+  use_cvae: true
+  vcae: ### Accented Text-to-Speech Synthesis with a Conditional Variational Autoencoder ###
+    conv_layers: 6
+    conv_chans_list: [32, 32, 64, 64, 128, 128]
+    conv_kernel_size: 3
+    conv_stride: 2
+    gru_layers: 1
+    gru_units: 256
+  use_postnet: true
+  building_block:
+    block_type: "conformer" # there are 2 types of encode ["transformer", "conformer"]
+    transformer: ### Attention Is All You Need (Vaswani et al., 2017) ###
+      encoder_head: 2
+      decoder_head: 2
+      conv_filter_size: 1024
+      conv_kernel_size: [9, 1]
+      encoder_dropout: 0.2
+      decoder_dropout: 0.2
+    conformer: ### Conformer: Convolution-augmented Transformer for Speech Recognition (Gulati et al., 2020) ###
+      encoder_head: 8
+      decoder_head: 8
+      ffn_expansion_factor: 4
+      conv_kernel_size: 31
+      conv_expansion_factor: 2
+      half_step_residual: True
+      encoder_dropout: 0.1
+      decoder_dropout: 0.1
+  variance: ### One TTS Alignment To Rule Them All (Badlani et al., 2021) ###
+    learn_alignment: true # switch between supervied or unsupervised learning
+    duration_modelling:
+      use_gaussian: true
+      aligner_temperature: 0.0005
+      binarization_start_steps: 6000
+    variance_predictor:
+      filter_size: 256
+      kernel_size: 3
+      dropout: 0.5
+      # unsupervised
+      dur_predictor_layers: 2
+      dur_predictor_kernel: 3
+      pit_predictor_layers: 2
+      pit_predictor_kernel: 5
+      ener_predictor_layers: 2
+      ener_predictor_kernel: 5
+      ffn_padding: "SAME"
+      ffn_act: "gelu"
+    variance_embedding:
+      n_bins: 256
+      pitch_feature: "phoneme_level" # support "phoneme_level" or "frame_level"
+      pitch_quantization: "linear" # support "linear" or "log"
+      energy_feature: "phoneme_level" # support "phoneme_level" or "frame_level"
+      energy_quantization: "linear" # support "linear" or "log"
+  postnet:
+    embedding_dim: 512
+    conv_layers: 5
+    kernel_size: 5   
+hifigan: ###  HiFi-GAN: Generative Adversarial Networks for Efficient and High Fidelity Speech Synthesis (Kong et al., 2020) ###
+  use_spk: false
+  segment_size: 64 # NOTE(by deanng): 32 * 256
+  resblock: 1
+  num_freq: 1025
+  upsample_rates: [8, 8, 2, 2]
+  upsample_kernel_sizes: [16, 16, 4, 4]
+  upsample_initial_channel: 512
+  resblock_kernel_sizes: [3, 7, 11]
+  resblock_dilation_sizes: [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+jets: ### JETS: Jointly Training FastSpeech2 and HiFi-GAN for End to End Text to Speech ###
+  generator_params:
+    adim: 256         # attention dimension
+    aheads: 2         # number of attention heads
+    elayers: 4        # number of encoder layers
+    eunits: 1024      # number of encoder ff units
+    dlayers: 6        # number of decoder layers
+    dunits: 1024      # number of decoder ff units
+    positionwise_layer_type: conv1d   # type of position-wise layer
+    positionwise_conv_kernel_size: 3  # kernel size of position wise conv layer
+    duration_predictor_layers: 2      # number of layers of duration predictor
+    duration_predictor_chans: 256     # number of channels of duration predictor
+    duration_predictor_kernel_size: 3 # filter size of duration predictor
+    use_masking: True                 # whether to apply masking for padded part in loss calculation
+    encoder_normalize_before: True    # whether to perform layer normalization before the input
+    decoder_normalize_before: True    # whether to perform layer normalization before the input
+    encoder_type: transformer         # encoder type
+    decoder_type: transformer         # decoder type
+    conformer_rel_pos_type: latest               # relative positional encoding type
+    conformer_pos_enc_layer_type: rel_pos        # conformer positional encoding type
+    conformer_self_attn_layer_type: rel_selfattn # conformer self-attention type
+    conformer_activation_type: swish             # conformer activation type
+    use_macaron_style_in_conformer: true         # whether to use macaron style in conformer
+    use_cnn_in_conformer: true                   # whether to use CNN in conformer
+    conformer_enc_kernel_size: 7                 # kernel size in CNN module of conformer-based encoder
+    conformer_dec_kernel_size: 31                # kernel size in CNN module of conformer-based decoder
+    init_type: xavier_uniform                    # initialization type
+    transformer_enc_dropout_rate: 0.2            # dropout rate for transformer encoder layer
+    transformer_enc_positional_dropout_rate: 0.2 # dropout rate for transformer encoder positional encoding
+    transformer_enc_attn_dropout_rate: 0.2       # dropout rate for transformer encoder attention layer
+    transformer_dec_dropout_rate: 0.2            # dropout rate for transformer decoder layer
+    transformer_dec_positional_dropout_rate: 0.2 # dropout rate for transformer decoder positional encoding
+    transformer_dec_attn_dropout_rate: 0.2       # dropout rate for transformer decoder attention layer
+    pitch_predictor_layers: 5                    # number of conv layers in pitch predictor
+    pitch_predictor_chans: 256                   # number of channels of conv layers in pitch predictor
+    pitch_predictor_kernel_size: 5               # kernel size of conv leyers in pitch predictor
+    pitch_predictor_dropout: 0.5                 # dropout rate in pitch predictor
+    pitch_embed_kernel_size: 1                   # kernel size of conv embedding layer for pitch
+    pitch_embed_dropout: 0.0                     # dropout rate after conv embedding layer for pitch
+    stop_gradient_from_pitch_predictor: true     # whether to stop the gradient from pitch predictor to encoder
+    energy_predictor_layers: 2                   # number of conv layers in energy predictor
+    energy_predictor_chans: 256                  # number of channels of conv layers in energy predictor
+    energy_predictor_kernel_size: 3              # kernel size of conv leyers in energy predictor
+    energy_predictor_dropout: 0.5                # dropout rate in energy predictor
+    energy_embed_kernel_size: 1                  # kernel size of conv embedding layer for energy
+    energy_embed_dropout: 0.0                    # dropout rate after conv embedding layer for energy
+    stop_gradient_from_energy_predictor: false   # whether to stop the gradient from energy predictor to encoder
+    use_gst: true
+    generator_out_channels: 1
+    generator_channels: 512
+    generator_global_channels: -1
+    generator_kernel_size: 7
+    generator_upsample_scales: [8, 8, 2, 2]
+    generator_upsample_kernel_sizes: [16, 16, 4, 4]
+    generator_resblock_kernel_sizes: [3, 7, 11]
+    generator_resblock_dilations: [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+    generator_use_additional_convs: true
+    generator_bias: true
+    generator_nonlinear_activation: "LeakyReLU"
+    generator_nonlinear_activation_params:
+      negative_slope: 0.1
+    generator_use_weight_norm: true
+    segment_size: 64              # segment size for random windowed discriminator (default base: 32)
+  discriminator_params:
+    scales: 1
+    scale_downsample_pooling: "AvgPool1d"
+    scale_downsample_pooling_params:
+      kernel_size: 4
+      stride: 2
+      padding: 2
+    scale_discriminator_params:
+      in_channels: 1
+      out_channels: 1
+      kernel_sizes: [15, 41, 5, 3]
+      channels: 128
+      max_downsample_channels: 1024
+      max_groups: 16
+      bias: True
+      downsample_scales: [2, 2, 4, 4, 1]
+      nonlinear_activation: "LeakyReLU"
+      nonlinear_activation_params:
+          negative_slope: 0.1
+      use_weight_norm: True
+      use_spectral_norm: False
+    follow_official_norm: False
+    periods: [2, 3, 5, 7, 11]
+    period_discriminator_params:
+      in_channels: 1
+      out_channels: 1
+      kernel_sizes: [5, 3]
+      channels: 32
+      downsample_scales: [3, 3, 3, 3, 1]
+      max_downsample_channels: 1024
+      bias: True
+      nonlinear_activation: "LeakyReLU"
+      nonlinear_activation_params:
+        negative_slope: 0.1
+      use_weight_norm: True
+      use_spectral_norm: False
+matcha: ### Matcha-TTS: A fast TTS architecture with conditional flow matching ###
+  spk_dims: -1
+  use_cvae: true
+  vcae: 
+    conv_layers: 6
+    conv_chans_list: [32, 32, 64, 64, 128, 128]
+    conv_kernel_size: 3
+    conv_stride: 2
+    gru_layers: 1
+    gru_units: 256 # NOTE(by deanng): change this to same dim with spK_emb_dim
+  spk_emb_dim: 64
+  text_encoder: # RoPE Encoder
+    hidden_dim: 192
+    use_prenet: true
+    prenet:
+      kernel_size: 5
+      n_layers: 3
+      p_dropout: 0.5
+    encoder:
+      filter_channels: 768
+      n_heads: 2
+      n_layers: 6
+      kernel_size: 3
+      p_dropout: 0.1
+  duration_modelling:
+    use_gaussian: true
+    aligner_temperature: 0.0005
+    binarization_start_steps: 6000
+  variance_predictor:
+    filter_size: 256
+    kernel_size: 3
+    dropout: 0.5
+    # unsupervised
+    dur_predictor_layers: 2
+    dur_predictor_kernel: 3
+    pit_predictor_layers: 2
+    pit_predictor_kernel: 5
+    ener_predictor_layers: 2
+    ener_predictor_kernel: 5
+    ffn_padding: "SAME"
+    ffn_act: "gelu"
+  flow_matching:
+    solver: euler
+    sigma_min: 1e-4
+  decoder:
+    channels: [256, 256]
+    dropout: 0.05
+    attention_head_dim: 64
+    n_blocks: 1
+    num_mid_blocks: 2
+    num_heads: 2
+    act_fn: snakebeta
+vits2: ### VITS2: Improving Quality and Efficiency of Single-Stage Text-to-Speech with Adversarial Learning and Architecture Design ###
+  segment_size: 8192
+  inter_channels: 192
+  hidden_channels: 192
+  filter_channels: 768
+  n_heads: 2
+  n_layers: 6
+  kernel_size: 3
+  p_dropout: 0.1
+  resblock: "1"
+  resblock_kernel_sizes: [3, 7, 11]
+  resblock_dilation_sizes: [[1, 3, 5], [1, 3, 5], [1, 3, 5]]
+  upsample_rates: [8, 8, 2, 2]
+  upsample_initial_channel: 512
+  upsample_kernel_sizes: [16, 16, 4, 4]
+  gin_channels: 256
+  use_sdp: true
+  use_mel_posterior_encoder: true
+  use_transformer_flows: true
+  transformer_flow_type: pre_conv
+  use_spk_conditioned_encoder: false
+  use_noise_scaled_mas: true
+  use_duration_discriminator: true
+  duration_discriminator_type: dur_disc_1
+  n_layers_q: 3
+  use_spectral_norm: false
+adaspeech: ### FastSpeech 2: Fast and High-Quality End-to-End Text to Speech (Ren et al., 2020) ###
+  max_seq_len: 1000
+  encoder_layers: 4
+  encoder_hidden: 256
+  decoder_layers: 6
+  decoder_hidden: 256
+  use_cvae: true
+  use_postnet: true
+  building_block:
+    block_type: "transformer" # there are 5 types of encode ["transformer", "conformer"]
+    transformer: ### Attention Is All You Need (Vaswani et al., 2017) ###
+      encoder_head: 2
+      decoder_head: 2
+      conv_filter_size: 1024
+      conv_kernel_size: [9, 1]
+      encoder_dropout: 0.2
+      decoder_dropout: 0.2
+    conformer: ### Conformer: Convolution-augmented Transformer for Speech Recognition (Gulati et al., 2020) ###
+      encoder_head: 8
+      decoder_head: 8
+      ffn_expansion_factor: 4
+      conv_kernel_size: 31
+      conv_expansion_factor: 2
+      half_step_residual: True
+      encoder_dropout: 0.1
+      decoder_dropout: 0.1
+  vcae: ### Accented Text-to-Speech Synthesis with a Conditional Variational Autoencoder ###
+    conv_layers: 6
+    conv_chans_list: [32, 32, 64, 64, 128, 128]
+    conv_kernel_size: 3
+    conv_stride: 2
+    gru_layers: 1
+    gru_units: 256
+  variance: ### One TTS Alignment To Rule Them All (Badlani et al., 2021) ###
+    learn_alignment: true # switch between supervied or unsupervised learning
+    duration_modelling:
+      use_gaussian: true
+      aligner_temperature: 0.0005
+      binarization_start_steps: 6000
+    variance_predictor:
+      filter_size: 256
+      kernel_size: 3
+      dropout: 0.5
+      # unsupervised
+      dur_predictor_layers: 2
+      dur_predictor_kernel: 3
+      pit_predictor_layers: 2
+      pit_predictor_kernel: 5
+      ener_predictor_layers: 2
+      ener_predictor_kernel: 5
+      ffn_padding: "SAME"
+      ffn_act: "gelu"
+    variance_embedding:
+      n_bins: 256
+      pitch_feature: "phoneme_level" # support "phoneme_level" or "frame_level"
+      pitch_quantization: "linear" # support "linear" or "log"
+      energy_feature: "phoneme_level" # support "phoneme_level" or "frame_level"
+      energy_quantization: "linear" # support "linear" or "log"
+    reference_encoder:  ### AdaSpeech: Adaptive Text to Speech for Custom Voice (Chen, Mingjian, et al., 2021)
+      phoneme_level_encoder_step: 60000
+      phn_latent_dim: 4
+      utterance_encoder:
+        idim: 80
+        n_layers: 2
+        n_chans: 256
+        kernel_size: 5
+        pool_kernel: 3
+        dropout_rate: 0.5
+        stride: 3
+      phoneme_level_encoder:
+        idim: 80
+        n_layers: 2
+        n_chans: 256
+        kernel_size: 3
+        dropout_rate: 0.5
+        stride: 1
+      phoneme_level_predictor:
+        idim: 256
+        n_layers: 2
+        n_chans: 256
+        kernel_size: 3
+        dropout_rate: 0.5
+        stride: 1
+  postnet:
+    embedding_dim: 512
+    conv_layers: 5
+    kernel_size: 5
+priorgrad: ### PriorGrad: Improving Conditional Denoising Diffusion Models with Data-Dependent Adaptive Prior (Lee, Sang-gil, et al. 2021) ###
+  use_prior: true # new data params for PriorGrad-vocoder
+  condition_prior: false
+  condition_prior_global: false 
+  std_min: 0.1
+  max_energy_override: 4.
+  residual_layers: 30
+  residual_channels: 64
+  dilation_cycle_length: 10
+  inference_noise_schedule: [0.0001, 0.001, 0.01, 0.05, 0.2, 0.5] # noise_schedule: np.linspace(1e-4, 0.05, 50).tolist(), # [beta_start, beta_end, num_diffusion_step]

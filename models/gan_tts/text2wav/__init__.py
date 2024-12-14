@@ -1,0 +1,1 @@
+from models.gan_tts.text2wav.model import Text2Wav

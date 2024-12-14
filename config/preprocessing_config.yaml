@@ -1,0 +1,14 @@
+signal:
+  sampling_rate: 22050      # default: 22050
+  max_wav_value: 32768.0
+  segment_length: 32768
+stft:
+  filter_length: 1024       # fft points
+  hop_length: 256           # hop size
+  win_length: 1024          # window size
+  window: "hann"            # window type
+mel:
+  channels: 80              # number of Mel basis
+  fmin: 0                   # minimum frequency for mel basis
+  fmax: null                # maximum frequency for Mel basis
+  log_base: null            # null represent natural log

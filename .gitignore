@@ -1,0 +1,17 @@
+# folder ignore
+__pycache__/
+.idea
+.flake80
+.vscode
+data/*
+exps/
+saved_audios/
+audio_generated/
+
+# file ignore
+*.log
+testing_lib*.py
+modules/mfa/dict/
+backup/
+egs/
+log/

@@ -1,0 +1,96 @@
+seed: 1234
+batch_size: 8
+log_step: 100
+grad_clip_thresh: 1.0
+load_mel_from_disk: true
+fastspeech2:
+  loss:
+    linbuild:
+      start: 0.0001
+      stop: 0.0005
+      n_up: 10000
+      n_stop: 35000
+    dur_loss_lambda: {"pdur": 1.0, "wdur": 0.0, "sdur": 0.0}
+    binarization_loss_warmup_steps: 10000
+    binarization_loss_enable_steps: 18000
+  optimizer:
+    lr: 2.0e-4
+    betas: [0.8, 0.99]
+    eps: 1.0e-9
+    weight_decay: 0.0
+hifigan:
+  optimizer:
+    lr: 0.0002
+    betas: [0.8, 0.99]
+    eps: 0.000000001
+    weight_decay: 0.999
+jets:
+  loss:
+    generator_adv_loss_params:
+      average_by_discriminators: false # whether to average loss value by #discriminators
+      loss_type: mse                   # loss type, "mse" or "hinge"
+    discriminator_adv_loss_params:
+      average_by_discriminators: false # whether to average loss value by #discriminators
+      loss_type: mse                   # loss type, "mse" or "hinge"
+    feat_match_loss_params:
+      average_by_discriminators: false # whether to average loss value by #discriminators
+      average_by_layers: false         # whether to average loss value by #layers of each discriminator
+      include_final_outputs: true      # whether to include final outputs for loss calculation
+    lambda_adv: 1.0        # loss scaling coefficient for adversarial loss
+    lambda_mel: 45.0       # loss scaling coefficient for Mel loss
+    lambda_feat_match: 2.0 # loss scaling coefficient for feat match loss
+    lambda_var: 1.0
+    lambda_align: 2.0
+  optimizer:
+    gen_optim_conf:
+      lr: 2.0e-4
+      betas: [0.8, 0.99]
+      eps: 1.0e-9
+      weight_decay: 0.0
+    gen_scheduler_conf:
+      gamma: 0.999875
+    # optimizer setting for discriminator
+    dis_optim_conf:
+      lr: 2.0e-4
+      betas: [0.8, 0.99]
+      eps: 1.0e-9
+      weight_decay: 0.0
+    dis_scheduler_conf:
+      gamma: 0.999875
+matcha:
+  loss:
+    linbuild:
+      start: 0.0001
+      stop: 0.0005
+      n_up: 10000
+      n_stop: 35000
+    binarization_loss_warmup_steps: 10000
+    binarization_loss_enable_steps: 18000
+  optimizer:
+    lr: 1.e-4
+    weight_decay: 0.0
+vits2:
+  loss:
+    c_mel: 45
+    c_kl: 1.0
+  optimizer:
+    lr: 2.e-4
+    betas: [0.8, 0.99]
+    eps: 1.e-9
+  scheduler:
+    gamma: 0.999875
+adaspeech:
+  loss:
+    linbuild:
+      start: 0.0001
+      stop: 0.0005
+      n_up: 10000
+      n_stop: 35000
+    dur_loss_lambda: {"pdur": 1.0, "wdur": 0.0, "sdur": 0.0}
+    binarization_loss_warmup_steps: 10000
+    binarization_loss_enable_steps: 18000
+  optimizer:
+    lr: 2.0e-4
+    betas: [0.8, 0.99]
+    eps: 1.0e-9
+    weight_decay: 0.0
