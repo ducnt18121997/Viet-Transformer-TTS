@@ -144,7 +144,7 @@ If you use this code in your research, please cite:
 @misc{deanng_2024,
     author = {Dean Nguyen},
     title = {End-to-end TTS system - PyTorch Implementation},
-    year = {2023},
+    year = {2024},
     publisher = {GitHub},
     journal = {GitHub repository},
     howpublished = {\url{https://github.com/deanng/end-to-end-tts}}
