@@ -61,9 +61,8 @@ def beta_binomial_prior_distribution(phoneme_count, mel_count, scaling_factor=1.
     return np.array(mel_text_probs)
 
 
-def extract_embedding(path: str) -> np.array:
-    URL = "https://speech.aiservice.vn/speaker_verify/v1.0/get_embed"
-    res = requests.post(URL, files=[("file", (os.path.basename(path), open(path, "rb"), "audio/wav"))])    
+def extract_embedding(path: str, url: str) -> np.array:
+    res = requests.post(url, files=[("file", (os.path.basename(path), open(path, "rb"), "audio/wav"))])    
 
     if res.status_code == 200:
         emb = np.array(res.json()["embed"])
