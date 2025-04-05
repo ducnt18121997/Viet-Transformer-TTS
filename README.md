@@ -147,6 +147,6 @@ If you use this code in your research, please cite:
     year = {2024},
     publisher = {GitHub},
     journal = {GitHub repository},
-    howpublished = {\url{https://github.com/deanng/end-to-end-tts}}
+    howpublished = {\url{https://github.com/ducnt18121997/Viet-Transformer-TTS}}
 }
 ```
